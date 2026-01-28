@@ -1,0 +1,523 @@
+{
+  "columns": [
+    "backlog",
+    "approved",
+    "in-progress",
+    "review",
+    "done"
+  ],
+  "cards": [
+    {
+      "id": "17",
+      "title": "Brand Audit: Landing vs CRM/Extension",
+      "description": "Deep dive analysis of visual identity discrepancy. Landing site uses warm orange (#FF6B35), pill buttons, 'CoreLine' branding. CRM/Extension used cool indigo/blue (#4f46e5), rectangular buttons, 'JobTrackAI' branding. Documented color palettes, typography, button styles, and gap analysis.",
+      "column": "done",
+      "assignee": "max",
+      "project": "marketing",
+      "priority": "high",
+      "createdAt": "2026-01-27T22:00:00Z",
+      "completedAt": "2026-01-27T22:15:00Z",
+      "comments": [
+        {
+          "user": "max",
+          "text": "Key finding: CRM looked like a completely different product. Colors were opposite on color wheel (warm vs cool).",
+          "timestamp": "2026-01-27T22:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "18",
+      "title": "Brand Unification: CRM + Extension",
+      "description": "Full rebrand of CRM and Chrome extension to match landing site. Changed primary color from indigo (#4f46e5) to orange (#FF6B35). Updated logo from 'JobTrackAI' to 'CoreLine'. Converted rectangular buttons to pill shapes. Added orange glow shadows. Updated 15+ component files.",
+      "column": "done",
+      "assignee": "max",
+      "project": "crm",
+      "priority": "high",
+      "createdAt": "2026-01-27T22:15:00Z",
+      "completedAt": "2026-01-27T22:45:00Z",
+      "comments": [
+        {
+          "user": "max",
+          "text": "Files: App.tsx, LoginView.tsx, JobCard.tsx, ContactCard.tsx, AddContactModal.tsx, ContactDrawer.tsx, DetailDrawer.tsx, SmartImportModal.tsx, SubscriptionView.tsx, SettingsView.tsx, OnboardingWizard.tsx, FeedbackWidget.tsx, ExtensionSimulator.tsx, sidebar-shadow.js, index.html",
+          "timestamp": "2026-01-27T22:15:00Z"
+        }
+      ]
+    },
+    {
+      "id": "14",
+      "title": "Test Extension Shadow DOM Refactor",
+      "description": "Reload JobTrack AI extension in chrome://extensions/, test on LinkedIn: 1) Attach Clawdbot relay (badge ON), 2) Open Core Line sidebar, 3) Scan job + save, 4) Scan hiring manager + save, 5) Verify both work simultaneously. Shadow DOM replaces iframe to fix debugger conflicts.",
+      "column": "review",
+      "assignee": "micah",
+      "project": "extension",
+      "priority": "high",
+      "createdAt": "2026-01-27T05:34:00Z",
+      "comments": [
+        {
+          "user": "micah",
+          "text": "Files changed: sidebar-shadow.js (new), content.js, manifest.json",
+          "timestamp": "2026-01-27T05:34:00Z"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Create features screenshots",
+      "description": "Take 6 screenshots of CRM for features page. Seed data now working - clean demo data available via Admin > Seed Demo Data button.",
+      "column": "approved",
+      "assignee": "micah",
+      "project": "landing",
+      "priority": "high",
+      "createdAt": "2026-01-26T19:25:00Z",
+      "comments": [
+        {
+          "user": "micah",
+          "text": "I think at this point we are good to go and you can spin up a team to take the screenshots for us.",
+          "timestamp": "2026-01-28T03:59:25.524Z"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "title": "Review landing page messaging",
+      "description": "Ensure copy matches job seeker CRM positioning",
+      "column": "backlog",
+      "assignee": "micah",
+      "project": "landing",
+      "priority": "medium",
+      "createdAt": "2026-01-26T19:25:00Z"
+    },
+    {
+      "id": "15",
+      "title": "Auto-refresh JWT tokens",
+      "description": "Handle expired Supabase sessions automatically instead of requiring manual re-login. Added autoRefreshToken, persistSession, PKCE flow. Periodic 5-min session check with proactive refresh. Helper functions: isSessionValid(), refreshSession(), withAuthRetry().",
+      "column": "done",
+      "assignee": "friday",
+      "project": "crm",
+      "priority": "high",
+      "createdAt": "2026-01-27T21:12:00Z",
+      "completedAt": "2026-01-27T21:15:00Z",
+      "comments": [
+        {
+          "user": "friday",
+          "text": "Files: services/supabase.ts, App.tsx auth useEffect",
+          "timestamp": "2026-01-27T21:12:00Z"
+        }
+      ]
+    },
+    {
+      "id": "16",
+      "title": "Fix Seed Data - RLS DELETE policies",
+      "description": "Seed Demo Data button wasn't deleting old data due to missing RLS DELETE policies. Added policies via Supabase SQL Editor: 'Users can delete own jobs', 'Users can delete own contacts'.",
+      "column": "done",
+      "assignee": "friday",
+      "project": "crm",
+      "priority": "high",
+      "createdAt": "2026-01-27T20:45:00Z",
+      "completedAt": "2026-01-27T21:08:00Z",
+      "comments": [
+        {
+          "user": "friday",
+          "text": "Root cause: RLS had SELECT/INSERT but no DELETE policy. Deletes silently failed (returned success but 0 rows affected).",
+          "timestamp": "2026-01-27T20:45:00Z"
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "title": "BUG: WATCHLIST jobs missing from Board",
+      "description": "Jobs with WATCHLIST status appear in List view but have no column in Board/Kanban view",
+      "column": "done",
+      "assignee": "friday",
+      "project": "crm",
+      "priority": "medium",
+      "createdAt": "2026-01-26T21:45:00Z",
+      "completedAt": "2026-01-26T21:53:00Z",
+      "comments": [
+        {
+          "user": "friday",
+          "text": "Added WATCHLIST to COLUMNS array in App.tsx",
+          "timestamp": "2026-01-26T21:45:00Z"
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "title": "BUG: Drawer persists across navigation",
+      "description": "Job/Contact detail drawer stays open when clicking sidebar nav (Your Day, Jobs, Contacts, Settings). Should close on view change.",
+      "column": "done",
+      "assignee": "friday",
+      "project": "crm",
+      "priority": "medium",
+      "createdAt": "2026-01-26T21:45:00Z",
+      "completedAt": "2026-01-26T21:53:00Z",
+      "comments": [
+        {
+          "user": "friday",
+          "text": "Created handleNavigate() that closes both drawers before changing view",
+          "timestamp": "2026-01-26T21:45:00Z"
+        }
+      ]
+    },
+    {
+      "id": "13",
+      "title": "Remove Resume/Cover Letter fields",
+      "description": "Cut unnecessary fields from job detail drawer - resume already in Settings, cover letters are dying",
+      "column": "done",
+      "assignee": "friday",
+      "project": "crm",
+      "priority": "low",
+      "createdAt": "2026-01-26T21:58:00Z",
+      "completedAt": "2026-01-26T22:00:00Z",
+      "comments": [
+        {
+          "user": "friday",
+          "text": "Removed from DetailDrawer.tsx - Application Packet now shows only AI Match Score",
+          "timestamp": "2026-01-26T21:58:00Z"
+        }
+      ]
+    },
+    {
+      "id": "1",
+      "title": "Fix FooterCTA button",
+      "description": "Change from mailto to /app/index.html",
+      "column": "done",
+      "assignee": "friday",
+      "project": "landing",
+      "priority": "high",
+      "createdAt": "2026-01-26T19:25:00Z",
+      "completedAt": "2026-01-26T20:30:00Z",
+      "comments": [
+        {
+          "user": "friday",
+          "text": "Fixed href and updated copy for job seekers",
+          "timestamp": "2026-01-26T19:25:00Z"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "title": "Create /public/features/ folder",
+      "description": "Add folder structure for feature images",
+      "column": "done",
+      "assignee": "friday",
+      "project": "landing",
+      "priority": "medium",
+      "createdAt": "2026-01-26T19:25:00Z",
+      "completedAt": "2026-01-26T20:35:00Z"
+    },
+    {
+      "id": "5",
+      "title": "Code review - CRM",
+      "description": "Deep dive into CRM codebase",
+      "column": "done",
+      "assignee": "friday",
+      "project": "crm",
+      "priority": "high",
+      "createdAt": "2026-01-26T18:30:00Z",
+      "completedAt": "2026-01-26T19:20:00Z"
+    },
+    {
+      "id": "6",
+      "title": "Setup Friday + Clawdbot",
+      "description": "Configure Discord, browser control, Max subscription auth",
+      "column": "done",
+      "assignee": "friday",
+      "project": "ops",
+      "priority": "high",
+      "createdAt": "2026-01-26T18:00:00Z",
+      "completedAt": "2026-01-26T19:05:00Z"
+    },
+    {
+      "id": "8",
+      "title": "Seed data with AI Match Scores",
+      "description": "Update job descriptions with rich data and match scores",
+      "column": "done",
+      "assignee": "friday",
+      "project": "crm",
+      "priority": "high",
+      "createdAt": "2026-01-26T21:00:00Z",
+      "completedAt": "2026-01-26T21:23:00Z"
+    },
+    {
+      "id": "9",
+      "title": "Checkpoint save/reset system",
+      "description": "Replace hardcoded seed with dynamic checkpoint saves",
+      "column": "done",
+      "assignee": "friday",
+      "project": "crm",
+      "priority": "medium",
+      "createdAt": "2026-01-26T21:28:00Z",
+      "completedAt": "2026-01-26T21:35:00Z"
+    },
+    {
+      "id": "10",
+      "title": "Screenshot-ready UI",
+      "description": "Toast notifications, collapsible admin panel",
+      "column": "done",
+      "assignee": "friday",
+      "project": "crm",
+      "priority": "medium",
+      "createdAt": "2026-01-26T21:33:00Z",
+      "completedAt": "2026-01-26T21:37:00Z"
+    },
+    {
+      "id": "7",
+      "title": "CRM Systematic Testing",
+      "description": "Walked through all views: Dashboard, Jobs (Board/List), Contacts, Settings. Tested job detail drawer, search, navigation.",
+      "column": "done",
+      "assignee": "friday",
+      "project": "crm",
+      "priority": "high",
+      "createdAt": "2026-01-26T21:41:00Z",
+      "completedAt": "2026-01-26T21:48:00Z",
+      "comments": [
+        {
+          "user": "friday",
+          "text": "WORKING: Dashboard action items, Job cards with AI match scores, Kanban board, List view, Contact cards, Settings page, Search filtering. BUGS FOUND: 2 (see bug cards)",
+          "timestamp": "2026-01-26T21:41:00Z"
+        }
+      ]
+    },
+    {
+      "id": "19",
+      "title": "Deploy Mission Control to Vercel + Supabase",
+      "description": "Move MC from local-only to cloud deployment. 1) Create Supabase tables: mc_cards, mc_activity, mc_departments. 2) Update index.html to use Supabase client instead of local fetch. 3) Add serverless API routes for /save endpoint. 4) Deploy to Vercel. 5) Configure env vars for Supabase connection. Result: MC accessible from anywhere, agents can sync whether local or remote.",
+      "column": "backlog",
+      "assignee": "friday",
+      "project": "ops",
+      "priority": "high",
+      "createdAt": "2026-01-27T22:08:00Z",
+      "comments": [
+        {
+          "user": "friday",
+          "text": "Tables needed: mc_cards (id, title, description, column, assignee, project, priority, created_at, completed_at, notes), mc_activity (id, type, card_id, card_title, user, timestamp), mc_departments (from executive-dashboard.json)",
+          "timestamp": "2026-01-27T22:08:00Z"
+        }
+      ]
+    },
+    {
+      "id": "20",
+      "title": "Website: Expand positioning beyond job seekers",
+      "description": "Update landing page to speak to ALL 4 segments, not just active job seekers. 1) Professional Relationship CRM positioning (not just job tracker). 2) Hero messaging that resonates with employed professionals too. 3) Use cases section for each segment. 4) Why people KEEP using it after landing.",
+      "column": "backlog",
+      "assignee": "friday",
+      "project": "landing",
+      "priority": "high",
+      "createdAt": "2026-01-27T22:20:00Z",
+      "comments": [
+        {
+          "user": "friday",
+          "text": "4 segments: Active job seekers, Passive professionals, Network builders, Career insurance crowd",
+          "timestamp": "2026-01-27T22:20:00Z"
+        }
+      ]
+    },
+    {
+      "id": "21",
+      "title": "Website: Add segment-specific use cases section",
+      "description": "Create visual section showing CoreLine value for each audience: 1) Job Seekers - track applications, find connections. 2) Passive Pros - stay visible to recruiters. 3) Network Builders - cultivate relationships long-term. 4) Career Insurance - keep warm with headhunters. Each with icon, headline, 2-3 bullet points.",
+      "column": "backlog",
+      "assignee": "friday",
+      "project": "landing",
+      "priority": "high",
+      "createdAt": "2026-01-27T22:20:00Z"
+    },
+    {
+      "id": "22",
+      "title": "Website: Update hero copy for broader appeal",
+      "description": "Current hero likely focuses on job search. Update to: Professional Relationship CRM angle. Something like: Your network is your net worth. CoreLine helps you build it, track it, and activate it when opportunity knocks. Test variations for different audiences.",
+      "column": "backlog",
+      "assignee": "friday",
+      "project": "landing",
+      "priority": "high",
+      "createdAt": "2026-01-27T22:20:00Z"
+    },
+    {
+      "id": "23",
+      "title": "Website: Add sticky value prop (why keep using after landing)",
+      "description": "Key differentiator vs Huntr: people dont churn after getting a job. Add messaging about ongoing value: Landed the job? Great. Now use CoreLine to stay connected, nurture relationships, and be ready for the next opportunity. Position as career-long tool, not just job-search tool.",
+      "column": "backlog",
+      "assignee": "friday",
+      "project": "landing",
+      "priority": "medium",
+      "createdAt": "2026-01-27T22:20:00Z"
+    }
+  ],
+  "activity": [
+    {
+      "id": "a16",
+      "type": "created",
+      "cardId": "20",
+      "cardTitle": "Website: Expand positioning beyond job seekers",
+      "user": "friday",
+      "timestamp": "2026-01-27T22:20:00Z"
+    },
+    {
+      "id": "a17",
+      "type": "created",
+      "cardId": "21",
+      "cardTitle": "Website: Add segment-specific use cases section",
+      "user": "friday",
+      "timestamp": "2026-01-27T22:20:00Z"
+    },
+    {
+      "id": "a18",
+      "type": "created",
+      "cardId": "22",
+      "cardTitle": "Website: Update hero copy for broader appeal",
+      "user": "friday",
+      "timestamp": "2026-01-27T22:20:00Z"
+    },
+    {
+      "id": "a19",
+      "type": "created",
+      "cardId": "23",
+      "cardTitle": "Website: Add sticky value prop",
+      "user": "friday",
+      "timestamp": "2026-01-27T22:20:00Z"
+    },
+    {
+      "id": "a15",
+      "type": "created",
+      "cardId": "19",
+      "cardTitle": "Deploy Mission Control to Vercel + Supabase",
+      "user": "friday",
+      "timestamp": "2026-01-27T22:08:00Z"
+    },
+    {
+      "id": "a13",
+      "type": "completed",
+      "cardId": "17",
+      "cardTitle": "Brand Audit: Landing vs CRM/Extension",
+      "user": "max",
+      "timestamp": "2026-01-27T22:15:00Z"
+    },
+    {
+      "id": "a14",
+      "type": "completed",
+      "cardId": "18",
+      "cardTitle": "Brand Unification: CRM + Extension",
+      "user": "max",
+      "timestamp": "2026-01-27T22:45:00Z"
+    },
+    {
+      "id": "a11",
+      "type": "completed",
+      "cardId": "16",
+      "cardTitle": "Fix Seed Data - RLS DELETE policies",
+      "user": "friday",
+      "timestamp": "2026-01-27T21:08:00Z"
+    },
+    {
+      "id": "a12",
+      "type": "completed",
+      "cardId": "15",
+      "cardTitle": "Auto-refresh JWT tokens",
+      "user": "friday",
+      "timestamp": "2026-01-27T21:15:00Z"
+    },
+    {
+      "id": "a1",
+      "type": "completed",
+      "cardId": "6",
+      "cardTitle": "Setup Friday + Clawdbot",
+      "user": "friday",
+      "timestamp": "2026-01-26T19:05:00Z"
+    },
+    {
+      "id": "a2",
+      "type": "completed",
+      "cardId": "5",
+      "cardTitle": "Code review - CRM",
+      "user": "friday",
+      "timestamp": "2026-01-26T19:20:00Z"
+    },
+    {
+      "id": "a3",
+      "type": "completed",
+      "cardId": "1",
+      "cardTitle": "Fix FooterCTA button",
+      "user": "friday",
+      "timestamp": "2026-01-26T20:30:00Z"
+    },
+    {
+      "id": "a4",
+      "type": "completed",
+      "cardId": "3",
+      "cardTitle": "Create /public/features/ folder",
+      "user": "friday",
+      "timestamp": "2026-01-26T20:35:00Z"
+    },
+    {
+      "id": "a5",
+      "type": "completed",
+      "cardId": "8",
+      "cardTitle": "Seed data with AI Match Scores",
+      "user": "friday",
+      "timestamp": "2026-01-26T21:23:00Z"
+    },
+    {
+      "id": "a6",
+      "type": "completed",
+      "cardId": "9",
+      "cardTitle": "Checkpoint save/reset system",
+      "user": "friday",
+      "timestamp": "2026-01-26T21:35:00Z"
+    },
+    {
+      "id": "a7",
+      "type": "completed",
+      "cardId": "10",
+      "cardTitle": "Screenshot-ready UI",
+      "user": "friday",
+      "timestamp": "2026-01-26T21:37:00Z"
+    },
+    {
+      "id": "a8",
+      "type": "completed",
+      "cardId": "7",
+      "cardTitle": "CRM Systematic Testing",
+      "user": "friday",
+      "timestamp": "2026-01-26T21:48:00Z"
+    },
+    {
+      "id": "a9",
+      "type": "created",
+      "cardId": "11",
+      "cardTitle": "BUG: WATCHLIST jobs missing from Board",
+      "user": "friday",
+      "timestamp": "2026-01-26T21:48:00Z"
+    },
+    {
+      "id": "a10",
+      "type": "created",
+      "cardId": "12",
+      "cardTitle": "BUG: Drawer persists across navigation",
+      "user": "friday",
+      "timestamp": "2026-01-26T21:48:00Z"
+    }
+  ],
+  "projects": {
+    "landing": {
+      "name": "Landing Site",
+      "color": "#8b5cf6"
+    },
+    "crm": {
+      "name": "CRM App",
+      "color": "#FF6B35"
+    },
+    "extension": {
+      "name": "Extension",
+      "color": "#10b981"
+    },
+    "ops": {
+      "name": "Operations",
+      "color": "#f59e0b"
+    },
+    "marketing": {
+      "name": "Marketing",
+      "color": "#ec4899"
+    }
+  }
+}
