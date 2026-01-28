@@ -929,6 +929,17 @@
       padding: 0.5rem 0;
     }
 
+    /* Links in comments */
+    .comment-link {
+      color: var(--accent-primary);
+      text-decoration: none;
+      word-break: break-all;
+    }
+    
+    .comment-link:hover {
+      text-decoration: underline;
+    }
+    
     /* @Mentions */
     .mention {
       background: var(--accent-primary-glow);
@@ -2930,15 +2941,26 @@
       hideMentionDropdown();
     }
 
-    // Render mentions in comment text
+    // Render mentions and links in comment text
     function formatCommentText(text) {
-      return escapeHtml(text).replace(/@(\w+)/g, (match, name) => {
+      let formatted = escapeHtml(text);
+      
+      // Convert URLs to clickable links
+      formatted = formatted.replace(
+        /(https?:\/\/[^\s<]+)/g, 
+        '<a href="$1" target="_blank" class="comment-link">$1</a>'
+      );
+      
+      // Convert @mentions
+      formatted = formatted.replace(/@(\w+)/g, (match, name) => {
         const member = teamMembers.find(m => m.id === name.toLowerCase());
         if (member) {
           return `<span class="mention">@${member.id}</span>`;
         }
         return match;
       });
+      
+      return formatted;
     }
 
     function closeDrawer() {
