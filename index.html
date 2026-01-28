@@ -1824,7 +1824,7 @@
       console.error('Supabase failed to load');
       alert('Failed to load authentication. Please refresh the page.');
     }
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Allowed users - only these emails can access Mission Control (lowercase)
     const ALLOWED_USERS = [
@@ -1841,11 +1841,11 @@
 
     // Auth functions
     async function checkAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
       if (session) {
         // Check if user is in allowlist
         if (!ALLOWED_USERS.includes(session.user.email.toLowerCase())) {
-          await supabase.auth.signOut();
+          await sb.auth.signOut();
           showLogin();
           return;
         }
@@ -1870,7 +1870,7 @@
       errorEl.classList.remove('show');
 
       console.log('Attempting auth for:', email);
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
+      const { data, error: authError } = await sb.auth.signInWithPassword({
         email,
         password
       });
@@ -1888,7 +1888,7 @@
       // Check if user is in allowlist
       if (!ALLOWED_USERS.includes(data.user.email.toLowerCase())) {
         console.log('User not in allowlist:', data.user.email);
-        await supabase.auth.signOut();
+        await sb.auth.signOut();
         errorEl.textContent = 'Access denied. You are not authorized to use Mission Control.';
         errorEl.classList.add('show');
         btn.textContent = 'Sign In';
@@ -1902,7 +1902,7 @@
     }
 
     async function handleLogout() {
-      await supabase.auth.signOut();
+      await sb.auth.signOut();
       currentUser = null;
       showLogin();
     }
@@ -1925,7 +1925,7 @@
     }
 
     // Listen for auth changes
-    supabase.auth.onAuthStateChange((event, session) => {
+    sb.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         showLogin();
       }
