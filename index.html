@@ -2047,19 +2047,17 @@
     }
 
     async function loadExecData() {
-      // Executive dashboard data - embedded for cloud version
-      execData = {
-        lastUpdated: new Date().toISOString(),
-        departments: {
-          marketing: { name: 'Marketing', agent: 'Max', emoji: '📢', status: 'ready', color: '#ec4899', quickWins: [], keyMetrics: {}, alerts: [] },
-          finance: { name: 'Finance', agent: 'Penny', emoji: '💰', status: 'ready', color: '#10b981', quickWins: [], keyMetrics: {}, alerts: [] },
-          operations: { name: 'Operations', agent: 'Otto', emoji: '⚙️', status: 'ready', color: '#f59e0b', quickWins: [], keyMetrics: {}, alerts: [] },
-          strategy: { name: 'Strategy', agent: 'Sage', emoji: '🎯', status: 'ready', color: '#8b5cf6', quickWins: [], keyMetrics: {}, alerts: [] },
-          product: { name: 'Product', agent: 'Parker', emoji: '🛠️', status: 'ready', color: '#3b82f6', quickWins: [], keyMetrics: {}, alerts: [] },
-          legal: { name: 'Legal', agent: 'Lex', emoji: '⚖️', status: 'ready', color: '#6366f1', quickWins: [], keyMetrics: {}, alerts: [] }
-        },
-        morningBriefing: { enabled: true, schedule: '08:00 MST', lastRun: null }
-      };
+      try {
+        const res = await fetch('/executive-dashboard.json?t=' + Date.now());
+        execData = await res.json();
+      } catch (e) {
+        console.error('Failed to load executive dashboard:', e);
+        execData = {
+          lastUpdated: new Date().toISOString(),
+          departments: {},
+          morningBriefing: { enabled: true, schedule: '08:00 MST', lastRun: null }
+        };
+      }
     }
 
     function render() {
