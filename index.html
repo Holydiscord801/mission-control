@@ -744,6 +744,85 @@
       color: white;
     }
 
+    /* Attachments Section */
+    .attachments-section {
+      margin-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+
+    .attachments-header {
+      margin-bottom: 0.75rem;
+    }
+
+    .attachments-list {
+      margin-bottom: 0.75rem;
+    }
+
+    .attachment-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      background: var(--bg-card);
+      border-radius: 6px;
+      margin-bottom: 0.375rem;
+      font-size: 0.8125rem;
+    }
+
+    .attachment-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .attachment-icon {
+      font-size: 1rem;
+    }
+
+    .attachment-name {
+      color: var(--text-primary);
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .attachment-name:hover {
+      color: var(--accent-primary);
+    }
+
+    .attachment-delete {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.25rem;
+      font-size: 0.75rem;
+    }
+
+    .attachment-delete:hover {
+      color: var(--accent-red);
+    }
+
+    .no-attachments {
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+      font-style: italic;
+      padding: 0.5rem 0;
+    }
+
+    .attachment-upload {
+      margin-top: 0.5rem;
+    }
+
+    .uploading {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
     /* Comments Section */
     .comments-section {
       margin-top: 1.25rem;
@@ -1711,6 +1790,22 @@
           <span class="detail-label">Description</span>
           <textarea class="form-textarea" id="detailDescription" onchange="updateCardField('description', this.value)" placeholder="Add a description..."></textarea>
         </div>
+        <!-- Attachments Section -->
+        <div class="attachments-section">
+          <div class="attachments-header">
+            <span class="detail-label">📎 Attachments</span>
+          </div>
+          <div class="attachments-list" id="attachmentsList">
+            <div class="no-attachments">No attachments</div>
+          </div>
+          <div class="attachment-upload">
+            <input type="file" id="fileInput" style="display:none" onchange="handleFileUpload(event)">
+            <button class="btn btn-ghost" onclick="document.getElementById('fileInput').click()" style="width:100%">
+              + Add Attachment
+            </button>
+          </div>
+        </div>
+
         <div class="comments-section">
           <div class="comments-header">
             <span class="comments-title">💬 Comments</span>
@@ -1884,7 +1979,7 @@
         btn.disabled = false;
         return;
       }
-      
+
       // Check if user is in allowlist
       if (!ALLOWED_USERS.includes(data.user.email.toLowerCase())) {
         console.log('User not in allowlist:', data.user.email);
@@ -2547,10 +2642,121 @@
         document.getElementById('completedRow').style.display = 'none';
       }
 
-      // Render comments
+      // Render attachments and comments
+      renderAttachments(card);
       renderComments(card);
-
+      
       document.getElementById('drawer').classList.add('active');
+    }
+
+    // Attachments functions
+    function renderAttachments(card) {
+      const list = document.getElementById('attachmentsList');
+      const attachments = card.attachments || [];
+
+      if (attachments.length === 0) {
+        list.innerHTML = '<div class="no-attachments">No attachments</div>';
+        return;
+      }
+
+      list.innerHTML = attachments.map((att, idx) => `
+        <div class="attachment-item">
+          <div class="attachment-info">
+            <span class="attachment-icon">${getFileIcon(att.name)}</span>
+            <a href="${att.url}" target="_blank" class="attachment-name" title="${att.name}">${att.name}</a>
+          </div>
+          <button class="attachment-delete" onclick="deleteAttachment(${idx})">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function getFileIcon(filename) {
+      const ext = filename.split('.').pop().toLowerCase();
+      const icons = {
+        pdf: '📄', doc: '📝', docx: '📝', txt: '📝',
+        png: '🖼️', jpg: '🖼️', jpeg: '🖼️', gif: '🖼️', webp: '🖼️',
+        xls: '📊', xlsx: '📊', csv: '📊',
+        zip: '📦', rar: '📦',
+        mp4: '🎬', mov: '🎬', mp3: '🎵'
+      };
+      return icons[ext] || '📎';
+    }
+
+    async function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file || !selectedCardId) return;
+
+      const card = data.cards.find(c => c.id === selectedCardId);
+      if (!card) return;
+
+      const uploadBtn = document.querySelector('.attachment-upload .btn');
+      uploadBtn.textContent = 'Uploading...';
+      uploadBtn.classList.add('uploading');
+
+      try {
+        // Create unique filename
+        const timestamp = Date.now();
+        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const filePath = `${currentUser.id}/${selectedCardId}/${timestamp}_${safeName}`;
+
+        // Upload to Supabase Storage
+        const { data: uploadData, error } = await sb.storage
+          .from('mc-attachments')
+          .upload(filePath, file);
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data: urlData } = sb.storage
+          .from('mc-attachments')
+          .getPublicUrl(filePath);
+
+        // Add to card attachments
+        if (!card.attachments) card.attachments = [];
+        card.attachments.push({
+          name: file.name,
+          url: urlData.publicUrl,
+          path: filePath,
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: document.getElementById('commentUser').value
+        });
+
+        await saveData();
+        renderAttachments(card);
+        showSaveToast('📎 File uploaded');
+
+      } catch (err) {
+        console.error('Upload failed:', err);
+        alert('Upload failed: ' + err.message);
+      } finally {
+        uploadBtn.textContent = '+ Add Attachment';
+        uploadBtn.classList.remove('uploading');
+        event.target.value = ''; // Reset file input
+      }
+    }
+
+    async function deleteAttachment(index) {
+      if (!selectedCardId) return;
+      const card = data.cards.find(c => c.id === selectedCardId);
+      if (!card || !card.attachments) return;
+
+      const att = card.attachments[index];
+      if (!confirm(`Delete "${att.name}"?`)) return;
+
+      try {
+        // Delete from storage
+        if (att.path) {
+          await sb.storage.from('mc-attachments').remove([att.path]);
+        }
+
+        // Remove from card
+        card.attachments.splice(index, 1);
+        await saveData();
+        renderAttachments(card);
+        showSaveToast('🗑️ Attachment deleted');
+      } catch (err) {
+        console.error('Delete failed:', err);
+      }
     }
 
     function renderComments(card) {
