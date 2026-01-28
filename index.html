@@ -1822,6 +1822,12 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // Allowed users - only these emails can access Mission Control
+    const ALLOWED_USERS = [
+      'micah.processmodel@gmail.com',
+      // Add more team members here as needed
+    ];
+
     let currentUser = null;
     let data = null;
     let execData = null;
@@ -1832,6 +1838,12 @@
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        // Check if user is in allowlist
+        if (!ALLOWED_USERS.includes(session.user.email.toLowerCase())) {
+          await supabase.auth.signOut();
+          showLogin();
+          return;
+        }
         currentUser = session.user;
         showApp();
         loadData();
@@ -1863,7 +1875,17 @@
         btn.disabled = false;
         return;
       }
-
+      
+      // Check if user is in allowlist
+      if (!ALLOWED_USERS.includes(data.user.email.toLowerCase())) {
+        await supabase.auth.signOut();
+        error.textContent = 'Access denied. You are not authorized to use Mission Control.';
+        error.classList.add('show');
+        btn.textContent = 'Sign In';
+        btn.disabled = false;
+        return;
+      }
+      
       currentUser = data.user;
       showApp();
       loadData();
