@@ -1989,7 +1989,7 @@
 
       try {
         // Try to load from Supabase
-        const { data: boardData, error } = await supabase
+        const { data: boardData, error } = await sb
           .from('mc_boards')
           .select('data')
           .eq('user_id', currentUser.id)
@@ -2494,7 +2494,7 @@
       localStorage.setItem('mission-control-data', JSON.stringify(data));
 
       try {
-        const { error } = await supabase
+        const { error } = await sb
           .from('mc_boards')
           .upsert({
             user_id: currentUser.id,
