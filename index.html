@@ -1822,9 +1822,10 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Allowed users - only these emails can access Mission Control
+    // Allowed users - only these emails can access Mission Control (lowercase)
     const ALLOWED_USERS = [
       'micah.processmodel@gmail.com',
+      'micah@processmodel.com',
       // Add more team members here as needed
     ];
 
