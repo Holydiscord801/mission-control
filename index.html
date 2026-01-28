@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mission Control - Coreline</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1820,6 +1820,10 @@
     const SUPABASE_URL = 'https://hazsxuznwftwagpbuhre.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhenN4dXpud2Z0d2FncGJ1aHJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0NTE1MzUsImV4cCI6MjA4NDAyNzUzNX0.HtBlZj_pi6J5Y9GJuxrP_ZhRzxI5hnz4fp6aUJjo-xM';
 
+    if (!window.supabase) {
+      console.error('Supabase failed to load');
+      alert('Failed to load authentication. Please refresh the page.');
+    }
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Allowed users - only these emails can access Mission Control (lowercase)
@@ -1855,23 +1859,27 @@
 
     async function handleLogin(e) {
       e.preventDefault();
+      console.log('Login attempt...');
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
       const btn = document.getElementById('loginBtn');
-      const error = document.getElementById('loginError');
+      const errorEl = document.getElementById('loginError');
 
       btn.textContent = 'Signing in...';
       btn.disabled = true;
-      error.classList.remove('show');
+      errorEl.classList.remove('show');
 
+      console.log('Attempting auth for:', email);
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password
       });
+      console.log('Auth result:', { data, authError });
 
       if (authError) {
-        error.textContent = authError.message;
-        error.classList.add('show');
+        console.error('Auth error:', authError);
+        errorEl.textContent = authError.message;
+        errorEl.classList.add('show');
         btn.textContent = 'Sign In';
         btn.disabled = false;
         return;
@@ -1879,14 +1887,15 @@
       
       // Check if user is in allowlist
       if (!ALLOWED_USERS.includes(data.user.email.toLowerCase())) {
+        console.log('User not in allowlist:', data.user.email);
         await supabase.auth.signOut();
-        error.textContent = 'Access denied. You are not authorized to use Mission Control.';
-        error.classList.add('show');
+        errorEl.textContent = 'Access denied. You are not authorized to use Mission Control.';
+        errorEl.classList.add('show');
         btn.textContent = 'Sign In';
         btn.disabled = false;
         return;
       }
-      
+
       currentUser = data.user;
       showApp();
       loadData();
