@@ -1991,9 +1991,9 @@
         // Try to load from Supabase
         const { data: boardData, error } = await sb
           .from('mc_boards')
-          .select('data')
+          .select('*')
           .eq('user_id', currentUser.id)
-          .single();
+          .maybeSingle();
 
         if (error && error.code !== 'PGRST116') {
           console.error('Supabase error:', error);
