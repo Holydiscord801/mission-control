@@ -1,0 +1,151 @@
+{
+  "lastUpdated": "2026-01-27T22:30:00Z",
+  "departments": {
+    "marketing": {
+      "name": "Marketing",
+      "agent": "Max",
+      "emoji": "📢",
+      "status": "ready",
+      "color": "#ec4899",
+      "lastBriefing": null,
+      "quickWins": [
+        "Job Search Tracker Template - Notion/Sheets lead magnet (1 week, $0-100)",
+        "10 SEO Blog Posts - Target high-intent keywords (2-4 weeks)",
+        "LinkedIn Organic Content - 3-5 posts/week from founder (Start now)"
+      ],
+      "keyMetrics": {
+        "cac": null,
+        "signups": null,
+        "conversionRate": null
+      },
+      "alerts": [],
+      "researchComplete": true
+    },
+    "finance": {
+      "name": "Finance",
+      "agent": "Penny",
+      "emoji": "💰",
+      "status": "ready",
+      "color": "#10b981",
+      "lastBriefing": null,
+      "quickWins": [
+        "Set up financial tracking - Stripe dashboard + spreadsheet + Mercury bank",
+        "Add annual plan - $119/year (20% off) improves cash flow & reduces churn",
+        "Enable dunning - Recover 30-50% of failed payments automatically"
+      ],
+      "keyMetrics": {
+        "mrr": null,
+        "runway": null,
+        "churnRate": null,
+        "ltv": "$200 (projected)",
+        "cac": "<$45 (target)"
+      },
+      "alerts": [],
+      "researchComplete": true
+    },
+    "operations": {
+      "name": "Operations",
+      "agent": "Otto",
+      "emoji": "⚙️",
+      "status": "ready",
+      "color": "#f59e0b",
+      "lastBriefing": null,
+      "quickWins": [
+        "Weekly Operating Rhythm - 30 min setup, immediate structure",
+        "One-Pager Template - Force clarity before building",
+        "Error & Feedback Pipeline - Sentry + simple feedback tracking"
+      ],
+      "keyMetrics": {
+        "openBugs": 0,
+        "deployFrequency": null,
+        "supportTickets": null
+      },
+      "alerts": [],
+      "researchComplete": true
+    },
+    "strategy": {
+      "name": "Strategy",
+      "agent": "Sage",
+      "emoji": "🎯",
+      "status": "ready",
+      "color": "#8b5cf6",
+      "lastBriefing": null,
+      "quickWins": [
+        "Competitive Pricing Page - Show $25/month savings vs Huntr prominently",
+        "60 Second First Job Challenge - Engineer fastest onboarding in category",
+        "Target 'Huntr Alternative' Keywords - High-intent SEO content"
+      ],
+      "keyMetrics": {
+        "marketPosition": "Challenger",
+        "priceAdvantage": "$25/mo vs Huntr",
+        "tam": "$500M+"
+      },
+      "alerts": [],
+      "researchComplete": true
+    },
+    "product": {
+      "name": "Product",
+      "agent": "Parker",
+      "emoji": "🛠️",
+      "status": "ready",
+      "color": "#3b82f6",
+      "lastBriefing": null,
+      "quickWins": [
+        "Smart Job Save Auto-Detection - Detect when user is on job page (1-2 weeks)",
+        "Follow-Up Reminder System - Nudge users to follow up on applications (1-2 weeks)",
+        "Progress Dashboard with Motivation - Celebrate wins, show progress (1 week)"
+      ],
+      "keyMetrics": {
+        "northStar": "Weekly Jobs Actively Tracked",
+        "activationRate": null,
+        "retentionRate": null
+      },
+      "alerts": [],
+      "researchComplete": true
+    },
+    "legal": {
+      "name": "Legal",
+      "agent": "Lex",
+      "emoji": "⚖️",
+      "status": "active",
+      "color": "#ef4444",
+      "lastBriefing": "2026-01-27T22:30:00Z",
+      "quickWins": [
+        "Week 1: Form entity + business bank account",
+        "Week 2: ToS + Privacy Policy with proper clickwrap",
+        "Week 3: Secure domains, trademark search, file if clear"
+      ],
+      "keyMetrics": {
+        "entityFormed": false,
+        "tosPublished": false,
+        "privacyPolicyPublished": false,
+        "linkedInRiskMitigated": "in-progress"
+      },
+      "alerts": [
+        "LinkedIn scraping risk being addressed - card #17 in-progress"
+      ],
+      "researchComplete": true,
+      "activeCards": 4
+    }
+  },
+  "morningBriefing": {
+    "enabled": true,
+    "schedule": "08:00 MST",
+    "lastRun": null,
+    "template": {
+      "sections": [
+        "overnight_activity",
+        "department_status",
+        "top_recommendations",
+        "blockers",
+        "today_focus"
+      ]
+    }
+  },
+  "companyStats": {
+    "totalQuickWins": 18,
+    "completedQuickWins": 0,
+    "researchReportsComplete": 6,
+    "agentsConfigured": 6
+  }
+}

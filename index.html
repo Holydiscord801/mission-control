@@ -1,0 +1,2868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mission Control - Coreline</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #1a1a24;
+      --bg-card-hover: #22222e;
+      --border: #2a2a3a;
+      --text-primary: #f0f0f5;
+      --text-secondary: #8888a0;
+      --text-muted: #555566;
+      /* Coreline Brand Colors */
+      --accent-primary: #FF6B35;
+      --accent-primary-hover: #E55A25;
+      --accent-primary-glow: rgba(255, 107, 53, 0.3);
+      /* Department Colors */
+      --dept-marketing: #ec4899;
+      --dept-finance: #10b981;
+      --dept-operations: #f59e0b;
+      --dept-strategy: #8b5cf6;
+      --dept-product: #3b82f6;
+      --dept-legal: #6366f1;
+      /* Status Colors */
+      --accent-green: #10b981;
+      --accent-orange: #f59e0b;
+      --accent-red: #ef4444;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      box-shadow: 0 4px 12px var(--accent-primary-glow);
+    }
+
+    .logo span.highlight { color: var(--accent-primary); }
+
+    .header-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    .btn-primary {
+      background: var(--accent-primary);
+      color: white;
+      box-shadow: 0 4px 12px var(--accent-primary-glow);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--accent-primary-glow);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-color: var(--accent-primary);
+    }
+
+    /* Department Tabs */
+    .tabs-container {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.25rem;
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 0.875rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+      background: var(--bg-card);
+    }
+
+    .tab.active {
+      color: var(--accent-primary);
+      border-bottom-color: var(--accent-primary);
+    }
+
+    .tab .badge {
+      background: var(--bg-card);
+      padding: 0.125rem 0.5rem;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .tab.active .badge {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .tab-icon {
+      font-size: 1rem;
+    }
+
+    /* Main Layout */
+    .main {
+      display: flex;
+      height: calc(100vh - 120px);
+    }
+
+    /* Board */
+    .board {
+      flex: 1;
+      display: flex;
+      gap: 1rem;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    /* Columns */
+    .column {
+      min-width: 300px;
+      max-width: 300px;
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .column-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .column-title {
+      font-weight: 600;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    .column-count {
+      background: var(--bg-card);
+      padding: 0.125rem 0.5rem;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .column-cards {
+      flex: 1;
+      padding: 0.75rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    .card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-title {
+      font-weight: 500;
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+
+    .card-priority {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 0.25rem;
+    }
+
+    .priority-high { background: var(--accent-red); }
+    .priority-medium { background: var(--accent-orange); }
+    .priority-low { background: var(--accent-green); }
+
+    .card-description {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-tags {
+      display: flex;
+      gap: 0.375rem;
+    }
+
+    .tag {
+      padding: 0.125rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.625rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    .card-assignee {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.625rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .assignee-micah { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .assignee-friday { background: linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover)); }
+
+    /* Queue Panel (Right Sidebar) */
+    .queue-panel {
+      width: 320px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .queue-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .queue-title {
+      font-weight: 600;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .queue-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .queue-tab {
+      flex: 1;
+      padding: 0.75rem;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .queue-tab:hover {
+      color: var(--text-primary);
+    }
+
+    .queue-tab.active {
+      color: var(--accent-primary);
+      border-bottom-color: var(--accent-primary);
+    }
+
+    .queue-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.75rem;
+    }
+
+    .queue-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .queue-section-title {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+      padding: 0 0.25rem;
+    }
+
+    .queue-item {
+      padding: 0.625rem 0.75rem;
+      background: var(--bg-card);
+      border-radius: 6px;
+      margin-bottom: 0.375rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      border-left: 3px solid transparent;
+    }
+
+    .queue-item:hover {
+      background: var(--bg-card-hover);
+      border-left-color: var(--accent-primary);
+    }
+
+    .queue-item-title {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .queue-item-meta {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .queue-item-dept {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .dept-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    /* Department Summary */
+    .dept-summary {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dept-card {
+      padding: 0.75rem;
+      background: var(--bg-card);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+    }
+
+    .dept-card:hover {
+      border-color: var(--border);
+      transform: translateY(-1px);
+    }
+
+    .dept-card.active {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 1px var(--accent-primary);
+    }
+
+    .dept-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.375rem;
+    }
+
+    .dept-icon {
+      font-size: 1rem;
+    }
+
+    .dept-name {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .dept-stats {
+      display: flex;
+      gap: 0.75rem;
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+    }
+
+    .dept-stat {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* Activity Panel */
+    .activity-list {
+      padding: 0.75rem;
+    }
+
+    .activity-item {
+      display: flex;
+      gap: 0.75rem;
+      font-size: 0.8125rem;
+      padding: 0.5rem 0;
+    }
+
+    .activity-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.625rem;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-text {
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .activity-text strong {
+      color: var(--text-primary);
+    }
+
+    .activity-time {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 480px;
+      padding: 1.5rem;
+    }
+
+    .modal-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 0.375rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 0.625rem 0.75rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+
+    /* Empty State */
+    .column-empty {
+      padding: 1.5rem 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+    }
+
+    /* Drawer */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: flex-end;
+      z-index: 100;
+    }
+
+    .drawer-overlay.active { display: flex; }
+
+    .drawer {
+      width: 420px;
+      max-width: 90vw;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      animation: slideIn 0.2s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    .drawer-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .drawer-title {
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+
+    .drawer-close {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.25rem;
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 4px;
+    }
+
+    .drawer-close:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+
+    .drawer-body {
+      flex: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .detail-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .detail-row .form-select {
+      width: auto;
+      min-width: 160px;
+    }
+
+    .detail-label {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .detail-section {
+      margin-top: 1.25rem;
+    }
+
+    .detail-section .detail-label {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .detail-section .form-textarea {
+      min-height: 100px;
+    }
+
+    .detail-meta {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .meta-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.375rem 0;
+    }
+
+    .meta-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .meta-value {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .drawer-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--accent-red);
+      border: 1px solid var(--accent-red);
+      border-radius: 20px;
+    }
+
+    .btn-danger:hover {
+      background: var(--accent-red);
+      color: white;
+    }
+
+    /* Comments Section */
+    .comments-section {
+      margin-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+
+    .comments-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .comments-title {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .comments-list {
+      max-height: 250px;
+      overflow-y: auto;
+      margin-bottom: 0.75rem;
+    }
+
+    .comment {
+      display: flex;
+      gap: 0.625rem;
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comment:last-child {
+      border-bottom: none;
+    }
+
+    .comment-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.625rem;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .comment-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .comment-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .comment-author {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .comment-time {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+    }
+
+    .comment-text {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .comment-input-wrapper {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .comment-input-wrapper .form-select {
+      width: auto;
+      min-width: 100px;
+    }
+
+    .comment-input-wrapper .form-input {
+      flex: 1;
+    }
+
+    .comment-input-wrapper .btn {
+      padding: 0.5rem 0.75rem;
+    }
+
+    .no-comments {
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+      font-style: italic;
+      padding: 0.5rem 0;
+    }
+
+    /* @Mentions */
+    .mention {
+      background: var(--accent-primary-glow);
+      color: var(--accent-primary);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .mention-dropdown {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+      z-index: 50;
+      min-width: 180px;
+      margin-bottom: 4px;
+    }
+
+    .mention-dropdown.show {
+      display: block;
+    }
+
+    .mention-item {
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+      transition: background 0.15s;
+    }
+
+    .mention-item:hover,
+    .mention-item.selected {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .mention-item-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.5rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .comment-input-container {
+      position: relative;
+    }
+
+    /* Save Toast */
+    .save-toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--accent-green);
+      color: white;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 200;
+    }
+
+    .save-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Assignee colors for all team members */
+    .assignee-max { background: linear-gradient(135deg, #ec4899, #db2777); }
+    .assignee-penny { background: linear-gradient(135deg, #10b981, #059669); }
+    .assignee-otto { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .assignee-sage { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    .assignee-parker { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .assignee-lex { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+
+    /* Login Screen */
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .login-screen.hidden {
+      display: none;
+    }
+
+    .login-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .login-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .login-logo .logo-icon {
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+    }
+
+    .login-logo-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .login-title {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .login-form .form-input {
+      padding: 0.875rem 1rem;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .login-error {
+      color: var(--accent-red);
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+
+    .login-error.show {
+      display: block;
+    }
+
+    .app-container {
+      display: none;
+    }
+
+    .app-container.show {
+      display: block;
+    }
+
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.75rem;
+      background: var(--bg-card);
+      border-radius: 20px;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+
+    .user-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.625rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    /* CEO Dashboard Styles */
+    .ceo-dashboard {
+      flex: 1;
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .ceo-dashboard.active {
+      display: block;
+    }
+
+    .dashboard-grid {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .dash-section {
+      margin-bottom: 2rem;
+    }
+
+    .dash-section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Stats Row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--accent-primary);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* Department Grid */
+    .dept-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .dept-status-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      transition: all 0.2s;
+      border-left: 4px solid transparent;
+      min-height: 120px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .dept-status-card:hover {
+      border-color: var(--border);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .dept-status-card.status-active {
+      border-left-color: var(--accent-green);
+    }
+
+    .dept-status-card.status-attention {
+      border-left-color: var(--accent-red);
+    }
+
+    .dept-status-card.status-ready {
+      border-left-color: var(--accent-orange);
+    }
+
+    .dept-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .dept-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .dept-emoji {
+      font-size: 1.5rem;
+    }
+
+    .dept-title {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .dept-agent {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .dept-status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .dept-status-badge.active {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+    }
+
+    .dept-status-badge.attention {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-red);
+    }
+
+    .dept-status-badge.ready {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-orange);
+    }
+
+    .dept-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .dept-metric {
+      font-size: 0.6875rem;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dept-metric-label {
+      color: var(--text-muted);
+    }
+
+    .dept-metric-value {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .dept-metric-value.metric-yes {
+      color: var(--accent-green);
+    }
+
+    .dept-metric-value.metric-no {
+      color: var(--accent-red);
+    }
+
+    /* Morning Briefing Banner */
+    .briefing-banner {
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255, 107, 53, 0.1) 100%);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent-primary);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .briefing-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .briefing-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .briefing-icon {
+      font-size: 1.25rem;
+    }
+
+    .briefing-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .briefing-schedule {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .btn-sm {
+      padding: 0.375rem 0.875rem;
+      font-size: 0.8125rem;
+    }
+
+    .briefing-content {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .briefing-placeholder {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .briefing-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 0.75rem;
+    }
+
+    .briefing-stat {
+      background: var(--bg-card);
+      padding: 0.75rem;
+      border-radius: 8px;
+    }
+
+    .briefing-stat-label {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .briefing-stat-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-top: 0.25rem;
+    }
+
+    .briefing-insights {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .briefing-insights h4 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .briefing-insights ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .briefing-insights li {
+      padding: 0.375rem 0;
+      padding-left: 1.25rem;
+      position: relative;
+      color: var(--text-secondary);
+    }
+
+    .briefing-insights li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--accent-primary);
+    }
+
+    /* Alerts */
+    .alerts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .alert-item {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+      padding: 0.875rem 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      transition: all 0.15s;
+    }
+
+    .alert-item[onclick]:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.5);
+      transform: translateX(4px);
+    }
+
+    .alert-icon {
+      font-size: 1rem;
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-text {
+      font-size: 0.875rem;
+      color: var(--text-primary);
+    }
+
+    .alert-source {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .empty-state {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    /* Two Column Layout */
+    .dash-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    /* Activity Feed */
+    .activity-feed {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .activity-feed .activity-item {
+      padding: 0.75rem;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+    }
+
+    .activity-feed .activity-item:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-primary);
+      transform: translateX(4px);
+    }
+
+    /* Quick Wins Grid */
+    .quick-wins-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1rem;
+    }
+
+    .quick-win-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+
+    .quick-win-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .quick-win-dept {
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    .quick-win-list {
+      list-style: none;
+    }
+
+    .quick-win-list li {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      padding: 0.375rem 0;
+      padding-left: 1rem;
+      position: relative;
+    }
+
+    .quick-win-list li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--accent-primary);
+    }
+
+    @media (max-width: 900px) {
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .dash-columns {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-icon">MC</div>
+        <span class="login-logo-text">Mission <span class="highlight">Control</span></span>
+      </div>
+      <p class="login-title">Sign in to continue</p>
+      <form class="login-form" onsubmit="handleLogin(event)">
+        <input type="email" class="form-input" id="loginEmail" placeholder="Email" required>
+        <input type="password" class="form-input" id="loginPassword" placeholder="Password" required>
+        <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%; padding: 0.875rem;">Sign In</button>
+        <p class="login-error" id="loginError"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div class="app-container" id="appContainer">
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">MC</div>
+      <span>Mission <span class="highlight">Control</span></span>
+    </div>
+    <div class="header-actions">
+      <div class="user-badge" id="userBadge">
+        <div class="user-avatar" id="userAvatar">MB</div>
+        <span id="userEmail">user@email.com</span>
+      </div>
+      <button class="btn btn-ghost" onclick="loadData()">↻ Refresh</button>
+      <button class="btn btn-ghost" onclick="exportData()">💾 Sync</button>
+      <button class="btn btn-primary" onclick="openModal()">+ Add Card</button>
+      <button class="btn btn-ghost" onclick="handleLogout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- Department Tabs -->
+  <div class="tabs-container">
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-filter="ceo">
+        <span class="tab-icon">👔</span>
+        <span>CEO Dashboard</span>
+      </div>
+      <div class="tab" data-filter="all">
+        <span class="tab-icon">📋</span>
+        <span>All Tasks</span>
+        <span class="badge" id="countAll">0</span>
+      </div>
+      <div class="tab" data-filter="marketing">
+        <span class="tab-icon">📣</span>
+        <span>Marketing</span>
+        <span class="badge" id="countMarketing">0</span>
+      </div>
+      <div class="tab" data-filter="finance">
+        <span class="tab-icon">💰</span>
+        <span>Finance</span>
+        <span class="badge" id="countFinance">0</span>
+      </div>
+      <div class="tab" data-filter="operations">
+        <span class="tab-icon">⚙️</span>
+        <span>Operations</span>
+        <span class="badge" id="countOperations">0</span>
+      </div>
+      <div class="tab" data-filter="strategy">
+        <span class="tab-icon">🔮</span>
+        <span>Strategy</span>
+        <span class="badge" id="countStrategy">0</span>
+      </div>
+      <div class="tab" data-filter="crm">
+        <span class="tab-icon">💻</span>
+        <span>CRM</span>
+        <span class="badge" id="countCrm">0</span>
+      </div>
+      <div class="tab" data-filter="extension">
+        <span class="tab-icon">🧩</span>
+        <span>Extension</span>
+        <span class="badge" id="countExtension">0</span>
+      </div>
+      <div class="tab" data-filter="landing">
+        <span class="tab-icon">🌐</span>
+        <span>Landing</span>
+        <span class="badge" id="countLanding">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- CEO Dashboard View -->
+    <div class="ceo-dashboard" id="ceoDashboard">
+      <div class="dashboard-grid">
+        <!-- Morning Briefing Banner -->
+        <div class="briefing-banner" id="briefingBanner">
+          <div class="briefing-header">
+            <div class="briefing-title">
+              <span class="briefing-icon">☀️</span>
+              <span>Morning Briefing</span>
+            </div>
+            <div class="briefing-actions">
+              <span class="briefing-schedule" id="briefingSchedule">Next: 8:00 AM MST</span>
+              <button class="btn btn-primary btn-sm" onclick="requestBriefing()">Generate Now</button>
+            </div>
+          </div>
+          <div class="briefing-content" id="briefingContent">
+            <div class="briefing-placeholder">No briefing yet today. Click "Generate Now" or wait for the 8:00 AM automatic briefing.</div>
+          </div>
+        </div>
+
+        <!-- Company Stats Row -->
+        <div class="dash-section stats-row">
+          <div class="stat-card">
+            <div class="stat-value" id="statCards">0</div>
+            <div class="stat-label">Active Cards</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statInProgress">0</div>
+            <div class="stat-label">In Progress</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statReview">0</div>
+            <div class="stat-label">In Review</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statDone">0</div>
+            <div class="stat-label">Completed</div>
+          </div>
+        </div>
+
+        <!-- Department Status Grid -->
+        <div class="dash-section">
+          <h3 class="dash-section-title">🏢 Department Status</h3>
+          <div class="dept-grid" id="deptGrid"></div>
+        </div>
+
+        <!-- Two Column Layout: Alerts + Activity -->
+        <div class="dash-columns">
+          <div class="dash-section">
+            <h3 class="dash-section-title">🚨 Alerts & Blockers</h3>
+            <div class="alerts-list" id="alertsList">
+              <div class="empty-state">No active alerts</div>
+            </div>
+          </div>
+          <div class="dash-section">
+            <h3 class="dash-section-title">📊 Today's Activity</h3>
+            <div class="activity-feed" id="activityFeed"></div>
+          </div>
+        </div>
+
+        <!-- Quick Wins by Department -->
+        <div class="dash-section">
+          <h3 class="dash-section-title">🎯 Top Quick Wins</h3>
+          <div class="quick-wins-grid" id="quickWinsGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="board" id="board"></div>
+
+    <!-- Queue/Activity Panel -->
+    <aside class="queue-panel">
+      <div class="queue-header">
+        <div class="queue-title">
+          <span>📥</span>
+          <span>Queue & Activity</span>
+        </div>
+      </div>
+
+      <div class="queue-tabs">
+        <div class="queue-tab active" data-queue="backlog">Backlog</div>
+        <div class="queue-tab" data-queue="activity">Activity</div>
+      </div>
+
+      <div class="queue-content" id="queueContent">
+        <!-- Populated by JS -->
+      </div>
+    </aside>
+  </div>
+
+  <!-- Card Detail Drawer -->
+  <div class="drawer-overlay" id="drawer">
+    <div class="drawer">
+      <div class="drawer-header">
+        <div class="drawer-title" id="drawerTitle">Card Details</div>
+        <button class="drawer-close" onclick="closeDrawer()">✕</button>
+      </div>
+      <div class="drawer-body">
+        <div class="detail-row">
+          <span class="detail-label">Status</span>
+          <select class="form-select" id="detailStatus" onchange="updateCardField('column', this.value)">
+            <option value="backlog">Backlog</option>
+            <option value="approved">Approved</option>
+            <option value="in-progress">In Progress</option>
+            <option value="review">Review</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Assignee</span>
+          <select class="form-select" id="detailAssignee" onchange="updateCardField('assignee', this.value)">
+            <option value="micah">👤 Micah</option>
+            <option value="friday">🤖 Friday</option>
+            <option value="max">📢 Max (Marketing)</option>
+            <option value="penny">💰 Penny (Finance)</option>
+            <option value="otto">⚙️ Otto (Operations)</option>
+            <option value="sage">🎯 Sage (Strategy)</option>
+            <option value="parker">🛠️ Parker (Product)</option>
+            <option value="lex">⚖️ Lex (Legal)</option>
+          </select>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Priority</span>
+          <select class="form-select" id="detailPriority" onchange="updateCardField('priority', this.value)">
+            <option value="high">🔴 High</option>
+            <option value="medium">🟠 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Project</span>
+          <select class="form-select" id="detailProject" onchange="updateCardField('project', this.value)">
+            <option value="landing">🌐 Landing Site</option>
+            <option value="crm">💻 CRM App</option>
+            <option value="extension">🧩 Extension</option>
+            <option value="ops">⚙️ Operations</option>
+            <option value="marketing">📣 Marketing</option>
+            <option value="finance">💰 Finance</option>
+            <option value="strategy">🔮 Strategy</option>
+          </select>
+        </div>
+        <div class="detail-section">
+          <span class="detail-label">Description</span>
+          <textarea class="form-textarea" id="detailDescription" onchange="updateCardField('description', this.value)" placeholder="Add a description..."></textarea>
+        </div>
+        <div class="comments-section">
+          <div class="comments-header">
+            <span class="comments-title">💬 Comments</span>
+          </div>
+          <div class="comments-list" id="commentsList">
+            <div class="no-comments">No comments yet</div>
+          </div>
+          <div class="comment-input-wrapper">
+            <select class="form-select" id="commentUser">
+              <option value="micah">Micah</option>
+              <option value="friday">Friday</option>
+              <option value="max">Max</option>
+              <option value="penny">Penny</option>
+              <option value="otto">Otto</option>
+              <option value="sage">Sage</option>
+              <option value="parker">Parker</option>
+              <option value="lex">Lex</option>
+            </select>
+            <div class="comment-input-container" style="flex:1; position:relative;">
+              <div class="mention-dropdown" id="mentionDropdown"></div>
+              <input type="text" class="form-input" id="commentInput" placeholder="Add a comment... (@ to mention)"
+                     onkeydown="handleCommentKeydown(event)"
+                     oninput="handleCommentInput(event)">
+            </div>
+            <button class="btn btn-primary" onclick="addComment()">Send</button>
+          </div>
+        </div>
+        <div class="detail-meta">
+          <div class="meta-item">
+            <span class="meta-label">Created</span>
+            <span class="meta-value" id="detailCreated">-</span>
+          </div>
+          <div class="meta-item" id="completedRow" style="display:none">
+            <span class="meta-label">Completed</span>
+            <span class="meta-value" id="detailCompleted">-</span>
+          </div>
+        </div>
+      </div>
+      <div class="drawer-footer">
+        <button class="btn btn-danger" onclick="deleteCard()">Delete Card</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Card Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-title">New Card</div>
+      <form id="cardForm" onsubmit="addCard(event)">
+        <div class="form-group">
+          <label class="form-label">Title</label>
+          <input type="text" class="form-input" id="cardTitle" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" id="cardDescription"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Assignee</label>
+            <select class="form-select" id="cardAssignee">
+              <option value="micah">👤 Micah</option>
+              <option value="friday">🤖 Friday</option>
+              <option value="max">📢 Max (Marketing)</option>
+              <option value="penny">💰 Penny (Finance)</option>
+              <option value="otto">⚙️ Otto (Operations)</option>
+              <option value="sage">🎯 Sage (Strategy)</option>
+              <option value="parker">🛠️ Parker (Product)</option>
+              <option value="lex">⚖️ Lex (Legal)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Priority</label>
+            <select class="form-select" id="cardPriority">
+              <option value="high">🔴 High</option>
+              <option value="medium">🟠 Medium</option>
+              <option value="low">🟢 Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Project</label>
+          <select class="form-select" id="cardProject">
+            <option value="landing">🌐 Landing Site</option>
+            <option value="crm">💻 CRM App</option>
+            <option value="extension">🧩 Extension</option>
+            <option value="ops">⚙️ Operations</option>
+            <option value="marketing">📣 Marketing</option>
+            <option value="finance">💰 Finance</option>
+            <option value="strategy">🔮 Strategy</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  </div> <!-- End app-container -->
+
+  <!-- Save Toast -->
+  <div class="save-toast" id="saveToast">✓ Saved</div>
+
+  <script>
+    // Supabase configuration
+    const SUPABASE_URL = 'https://hazsxuznwftwagpbuhre.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhenN4dXpud2Z0d2FncGJ1aHJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0NTE1MzUsImV4cCI6MjA4NDAyNzUzNX0.HtBlZj_pi6J5Y9GJuxrP_ZhRzxI5hnz4fp6aUJjo-xM';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let data = null;
+    let execData = null;
+    let currentFilter = 'ceo';
+    let currentQueueTab = 'backlog';
+
+    // Auth functions
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        currentUser = session.user;
+        showApp();
+        loadData();
+      } else {
+        showLogin();
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('loginBtn');
+      const error = document.getElementById('loginError');
+
+      btn.textContent = 'Signing in...';
+      btn.disabled = true;
+      error.classList.remove('show');
+
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (authError) {
+        error.textContent = authError.message;
+        error.classList.add('show');
+        btn.textContent = 'Sign In';
+        btn.disabled = false;
+        return;
+      }
+
+      currentUser = data.user;
+      showApp();
+      loadData();
+    }
+
+    async function handleLogout() {
+      await supabase.auth.signOut();
+      currentUser = null;
+      showLogin();
+    }
+
+    function showLogin() {
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('appContainer').classList.remove('show');
+    }
+
+    function showApp() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appContainer').classList.add('show');
+
+      if (currentUser) {
+        const email = currentUser.email;
+        document.getElementById('userEmail').textContent = email;
+        const initials = email.split('@')[0].substring(0, 2).toUpperCase();
+        document.getElementById('userAvatar').textContent = initials;
+      }
+    }
+
+    // Listen for auth changes
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        showLogin();
+      }
+    });
+
+    // Helper functions for team members
+    function getInitials(user) {
+      const initials = {
+        micah: 'MB',
+        friday: 'FR',
+        max: 'MX',
+        penny: 'PN',
+        otto: 'OT',
+        sage: 'SG',
+        parker: 'PK',
+        lex: 'LX'
+      };
+      return initials[user] || user?.substring(0, 2).toUpperCase() || '??';
+    }
+
+    function getDisplayName(user) {
+      const names = {
+        micah: 'Micah',
+        friday: 'Friday',
+        max: 'Max',
+        penny: 'Penny',
+        otto: 'Otto',
+        sage: 'Sage',
+        parker: 'Parker',
+        lex: 'Lex'
+      };
+      return names[user] || user;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    const columnNames = {
+      'backlog': 'Backlog',
+      'approved': 'Approved',
+      'in-progress': 'In Progress',
+      'review': 'Review',
+      'done': 'Done'
+    };
+
+    const projectColors = {
+      'landing': '#8b5cf6',
+      'crm': '#3b82f6',
+      'extension': '#10b981',
+      'ops': '#f59e0b',
+      'marketing': '#ec4899',
+      'finance': '#10b981',
+      'strategy': '#8b5cf6'
+    };
+
+    async function loadData() {
+      if (!currentUser) return;
+
+      try {
+        // Try to load from Supabase
+        const { data: boardData, error } = await supabase
+          .from('mc_boards')
+          .select('data')
+          .eq('user_id', currentUser.id)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Supabase error:', error);
+        }
+
+        if (boardData && boardData.data) {
+          data = boardData.data;
+        } else {
+          // Initialize with default data structure
+          data = {
+            columns: ['backlog', 'approved', 'in-progress', 'review', 'done'],
+            cards: [],
+            activity: [],
+            projects: {
+              landing: { name: 'Landing Site', color: '#8b5cf6' },
+              crm: { name: 'CRM App', color: '#FF6B35' },
+              extension: { name: 'Extension', color: '#10b981' },
+              ops: { name: 'Operations', color: '#f59e0b' },
+              marketing: { name: 'Marketing', color: '#ec4899' },
+              finance: { name: 'Finance', color: '#10b981' },
+              strategy: { name: 'Strategy', color: '#8b5cf6' }
+            }
+          };
+          // Save initial data
+          await saveData();
+        }
+
+        // Migrate old notes to comments
+        let migrated = false;
+        data.cards.forEach(card => {
+          if (card.notes && !card.comments) {
+            card.comments = [{
+              user: card.assignee || 'friday',
+              text: card.notes,
+              timestamp: card.createdAt || new Date().toISOString()
+            }];
+            delete card.notes;
+            migrated = true;
+          }
+        });
+        if (migrated) {
+          console.log('📝 Migrated notes to comments');
+          await saveData();
+        }
+
+        await loadExecData();
+        render();
+      } catch (e) {
+        console.error('Failed to load data:', e);
+      }
+    }
+
+    async function loadExecData() {
+      // Executive dashboard data - embedded for cloud version
+      execData = {
+        lastUpdated: new Date().toISOString(),
+        departments: {
+          marketing: { name: 'Marketing', agent: 'Max', emoji: '📢', status: 'ready', color: '#ec4899', quickWins: [], keyMetrics: {}, alerts: [] },
+          finance: { name: 'Finance', agent: 'Penny', emoji: '💰', status: 'ready', color: '#10b981', quickWins: [], keyMetrics: {}, alerts: [] },
+          operations: { name: 'Operations', agent: 'Otto', emoji: '⚙️', status: 'ready', color: '#f59e0b', quickWins: [], keyMetrics: {}, alerts: [] },
+          strategy: { name: 'Strategy', agent: 'Sage', emoji: '🎯', status: 'ready', color: '#8b5cf6', quickWins: [], keyMetrics: {}, alerts: [] },
+          product: { name: 'Product', agent: 'Parker', emoji: '🛠️', status: 'ready', color: '#3b82f6', quickWins: [], keyMetrics: {}, alerts: [] },
+          legal: { name: 'Legal', agent: 'Lex', emoji: '⚖️', status: 'ready', color: '#6366f1', quickWins: [], keyMetrics: {}, alerts: [] }
+        },
+        morningBriefing: { enabled: true, schedule: '08:00 MST', lastRun: null }
+      };
+    }
+
+    function render() {
+      updateViewVisibility();
+      if (currentFilter === 'ceo') {
+        renderDashboard();
+      } else {
+        renderBoard();
+      }
+      renderQueue();
+      updateCounts();
+    }
+
+    function updateViewVisibility() {
+      const dashboard = document.getElementById('ceoDashboard');
+      const board = document.getElementById('board');
+      const queuePanel = document.querySelector('.queue-panel');
+
+      if (currentFilter === 'ceo') {
+        dashboard.classList.add('active');
+        board.style.display = 'none';
+        if (queuePanel) queuePanel.style.display = 'none';
+      } else {
+        dashboard.classList.remove('active');
+        board.style.display = 'flex';
+        if (queuePanel) queuePanel.style.display = 'flex';
+      }
+    }
+
+    function renderDashboard() {
+      if (!data || !execData) return;
+
+      // Render briefing section
+      renderBriefing();
+
+      // Stats
+      const active = data.cards.filter(c => c.column !== 'done');
+      const inProgress = data.cards.filter(c => c.column === 'in-progress');
+      const review = data.cards.filter(c => c.column === 'review');
+      const done = data.cards.filter(c => c.column === 'done');
+
+      document.getElementById('statCards').textContent = active.length;
+      document.getElementById('statInProgress').textContent = inProgress.length;
+      document.getElementById('statReview').textContent = review.length;
+      document.getElementById('statDone').textContent = done.length;
+
+      // Department Status Grid
+      const deptGrid = document.getElementById('deptGrid');
+      let deptHtml = '';
+
+      for (const [key, dept] of Object.entries(execData.departments || {})) {
+        const statusClass = dept.status || 'ready';
+        const metricLabels = {
+          entityFormed: 'Entity',
+          tosPublished: 'ToS',
+          privacyPolicyPublished: 'Privacy',
+          linkedInRiskMitigated: 'LinkedIn',
+          marketPosition: 'Position',
+          priceAdvantage: 'Price Edge',
+          northStar: 'North Star',
+          activationRate: 'Activation',
+          retentionRate: 'Retention',
+          openBugs: 'Bugs',
+          deployFrequency: 'Deploys',
+          cac: 'CAC',
+          ltv: 'LTV',
+          mrr: 'MRR',
+          runway: 'Runway',
+          churnRate: 'Churn'
+        };
+        const metricsHtml = Object.entries(dept.keyMetrics || {})
+          .filter(([k, v]) => v !== null)
+          .slice(0, 3)
+          .map(([k, v]) => {
+            let displayVal = v;
+            let valClass = '';
+            if (v === true) { displayVal = '✓'; valClass = 'metric-yes'; }
+            else if (v === false) { displayVal = '✗'; valClass = 'metric-no'; }
+            return `<div class="dept-metric"><span class="dept-metric-label">${metricLabels[k] || k}: </span><span class="dept-metric-value ${valClass}">${displayVal}</span></div>`;
+          })
+          .join('');
+
+        deptHtml += `
+          <div class="dept-status-card status-${statusClass}" onclick="switchToDept('${key}')">
+            <div class="dept-header">
+              <div class="dept-info">
+                <span class="dept-emoji">${dept.emoji || '📁'}</span>
+                <div>
+                  <div class="dept-title">${dept.name}</div>
+                  <div class="dept-agent">Agent: ${dept.agent}</div>
+                </div>
+              </div>
+              <span class="dept-status-badge ${statusClass}">${statusClass}</span>
+            </div>
+            ${metricsHtml ? `<div class="dept-metrics">${metricsHtml}</div>` : ''}
+          </div>
+        `;
+      }
+      deptGrid.innerHTML = deptHtml;
+
+      // Alerts
+      const alertsList = document.getElementById('alertsList');
+      let allAlerts = [];
+      for (const [key, dept] of Object.entries(execData.departments || {})) {
+        (dept.alerts || []).forEach(alert => {
+          allAlerts.push({ text: alert, dept: dept.name, emoji: dept.emoji });
+        });
+      }
+
+      if (allAlerts.length > 0) {
+        alertsList.innerHTML = allAlerts.map(a => {
+          // Try to extract card ID from alert text (e.g., "card #17")
+          const cardMatch = a.text.match(/card #(\d+)/i);
+          const cardId = cardMatch ? cardMatch[1] : null;
+          const clickHandler = cardId ? `onclick="openDrawer('${cardId}')" style="cursor:pointer;"` : '';
+          return `
+            <div class="alert-item" ${clickHandler}>
+              <span class="alert-icon">⚠️</span>
+              <div class="alert-content">
+                <div class="alert-text">${a.text}</div>
+                <div class="alert-source">${a.emoji} ${a.dept}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        alertsList.innerHTML = '<div class="empty-state">✅ No active alerts</div>';
+      }
+
+      // Activity Feed
+      const activityFeed = document.getElementById('activityFeed');
+      const recent = [...(data.activity || [])].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 8);
+
+      if (recent.length > 0) {
+        activityFeed.innerHTML = recent.map(item => `
+          <div class="activity-item" onclick="openDrawer('${item.cardId}')" style="cursor:pointer;">
+            <div class="activity-avatar assignee-${item.user}">${getInitials(item.user)}</div>
+            <div class="activity-content">
+              <div class="activity-text"><strong>${getDisplayName(item.user)}</strong> ${item.type === 'completed' ? 'completed' : 'created'} <strong>${item.cardTitle}</strong></div>
+              <div class="activity-time">${formatTime(item.timestamp)}</div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        activityFeed.innerHTML = '<div class="empty-state">No recent activity</div>';
+      }
+
+      // Quick Wins
+      const quickWinsGrid = document.getElementById('quickWinsGrid');
+      let winsHtml = '';
+
+      for (const [key, dept] of Object.entries(execData.departments || {})) {
+        if (dept.quickWins && dept.quickWins.length > 0) {
+          winsHtml += `
+            <div class="quick-win-card">
+              <div class="quick-win-header">
+                <span>${dept.emoji}</span>
+                <span class="quick-win-dept">${dept.name}</span>
+              </div>
+              <ul class="quick-win-list">
+                ${dept.quickWins.slice(0, 3).map(w => `<li>${w}</li>`).join('')}
+              </ul>
+            </div>
+          `;
+        }
+      }
+      quickWinsGrid.innerHTML = winsHtml || '<div class="empty-state">No quick wins defined</div>';
+    }
+
+    function getFilteredCards() {
+      if (currentFilter === 'all') return data.cards;
+      return data.cards.filter(c => c.project === currentFilter);
+    }
+
+    function renderBoard() {
+      const board = document.getElementById('board');
+      board.innerHTML = '';
+
+      const filteredCards = getFilteredCards();
+
+      data.columns.forEach(colId => {
+        const cards = filteredCards.filter(c => c.column === colId);
+        const col = document.createElement('div');
+        col.className = 'column';
+        col.innerHTML = `
+          <div class="column-header">
+            <span class="column-title">${columnNames[colId]}</span>
+            <span class="column-count">${cards.length}</span>
+          </div>
+          <div class="column-cards" data-column="${colId}">
+            ${cards.length === 0 ? '<div class="column-empty">No cards</div>' : ''}
+            ${cards.map(card => renderCard(card)).join('')}
+          </div>
+        `;
+        board.appendChild(col);
+      });
+
+      setupDragDrop();
+    }
+
+    function renderCard(card) {
+      const project = data.projects[card.project] || { name: card.project, color: '#666' };
+      return `
+        <div class="card" draggable="true" data-id="${card.id}">
+          <div class="card-header">
+            <div class="card-title">${card.title}</div>
+            <div class="card-priority priority-${card.priority}"></div>
+          </div>
+          ${card.description ? `<div class="card-description">${card.description}</div>` : ''}
+          <div class="card-footer">
+            <div class="card-tags">
+              <span class="tag" style="background: ${project.color}22; color: ${project.color}">${project.name}</span>
+            </div>
+            <div class="card-assignee assignee-${card.assignee}">${getInitials(card.assignee)}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQueue() {
+      const content = document.getElementById('queueContent');
+
+      if (currentQueueTab === 'backlog') {
+        // Group backlog by department
+        const backlogCards = data.cards.filter(c => c.column === 'backlog');
+        const byProject = {};
+        backlogCards.forEach(c => {
+          if (!byProject[c.project]) byProject[c.project] = [];
+          byProject[c.project].push(c);
+        });
+
+        let html = '';
+        Object.keys(byProject).forEach(proj => {
+          const project = data.projects[proj] || { name: proj, color: '#666' };
+          html += `
+            <div class="queue-section">
+              <div class="queue-section-title" style="color: ${project.color}">${project.name} (${byProject[proj].length})</div>
+              ${byProject[proj].map(card => `
+                <div class="queue-item" onclick="openDrawer('${card.id}')">
+                  <div class="queue-item-title">${card.title}</div>
+                  <div class="queue-item-meta">
+                    <span class="priority-${card.priority}" style="display:inline-block;width:6px;height:6px;border-radius:50%;"></span>
+                    <span>${getDisplayName(card.assignee)}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        });
+
+        if (backlogCards.length === 0) {
+          html = '<div class="column-empty">No items in backlog</div>';
+        }
+
+        content.innerHTML = html;
+      } else {
+        // Activity feed
+        const recent = [...data.activity].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 15);
+
+        content.innerHTML = `
+          <div class="activity-list">
+            ${recent.map(item => `
+              <div class="activity-item">
+                <div class="activity-avatar assignee-${item.user}">${getInitials(item.user)}</div>
+                <div class="activity-content">
+                  <div class="activity-text"><strong>${getDisplayName(item.user)}</strong> ${item.type === 'completed' ? 'completed' : 'created'} <strong>${item.cardTitle}</strong></div>
+                  <div class="activity-time">${formatTime(item.timestamp)}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+    }
+
+    function updateCounts() {
+      const active = data.cards.filter(c => c.column !== 'done');
+      document.getElementById('countAll').textContent = active.length;
+
+      const projects = ['marketing', 'finance', 'operations', 'strategy', 'crm', 'extension', 'landing'];
+      projects.forEach(proj => {
+        const count = active.filter(c => c.project === proj || (proj === 'operations' && c.project === 'ops')).length;
+        const el = document.getElementById('count' + proj.charAt(0).toUpperCase() + proj.slice(1));
+        if (el) el.textContent = count;
+      });
+    }
+
+    function formatTime(ts) {
+      const d = new Date(ts);
+      const now = new Date();
+      const diff = (now - d) / 1000 / 60;
+      if (diff < 60) return Math.floor(diff) + 'm ago';
+      if (diff < 1440) return Math.floor(diff / 60) + 'h ago';
+      return d.toLocaleDateString();
+    }
+
+    // Tab handling
+    document.getElementById('tabs').addEventListener('click', (e) => {
+      const tab = e.target.closest('.tab');
+      if (!tab) return;
+
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentFilter = tab.dataset.filter;
+      render();
+    });
+
+    // Switch to department board from CEO dashboard
+    function switchToDept(deptKey) {
+      // Map department keys to tab filters
+      const deptToFilter = {
+        'marketing': 'marketing',
+        'finance': 'finance',
+        'operations': 'operations',
+        'strategy': 'strategy',
+        'product': 'crm',
+        'legal': 'all' // Legal doesn't have its own tab, show all
+      };
+
+      const filter = deptToFilter[deptKey] || 'all';
+
+      // Find and click the matching tab
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        if (tab.dataset.filter === filter) {
+          tab.click();
+        }
+      });
+    }
+
+    // Queue tab handling
+    document.querySelector('.queue-tabs').addEventListener('click', (e) => {
+      const tab = e.target.closest('.queue-tab');
+      if (!tab) return;
+
+      document.querySelectorAll('.queue-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentQueueTab = tab.dataset.queue;
+      renderQueue();
+    });
+
+    function setupDragDrop() {
+      document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', e => {
+          if (!e.target.closest('.card')) return;
+          openDrawer(card.dataset.id);
+        });
+        card.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', card.dataset.id);
+          card.style.opacity = '0.5';
+        });
+        card.addEventListener('dragend', e => {
+          card.style.opacity = '1';
+        });
+      });
+
+      document.querySelectorAll('.column-cards').forEach(col => {
+        col.addEventListener('dragover', e => {
+          e.preventDefault();
+          col.style.background = 'rgba(255, 107, 53, 0.1)';
+        });
+        col.addEventListener('dragleave', e => {
+          col.style.background = '';
+        });
+        col.addEventListener('drop', e => {
+          e.preventDefault();
+          col.style.background = '';
+          const cardId = e.dataTransfer.getData('text/plain');
+          const newColumn = col.dataset.column;
+          moveCard(cardId, newColumn);
+        });
+      });
+    }
+
+    function moveCard(cardId, newColumn) {
+      const card = data.cards.find(c => c.id === cardId);
+      if (!card || card.column === newColumn) return;
+
+      const oldColumn = card.column;
+      card.column = newColumn;
+
+      if (newColumn === 'done' && oldColumn !== 'done') {
+        card.completedAt = new Date().toISOString();
+        data.activity.unshift({
+          id: 'a' + Date.now(),
+          type: 'completed',
+          cardId: card.id,
+          cardTitle: card.title,
+          user: card.assignee,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      saveData();
+      render();
+    }
+
+    function openModal() {
+      document.getElementById('modal').classList.add('active');
+      document.getElementById('cardTitle').focus();
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+      document.getElementById('cardForm').reset();
+    }
+
+    function addCard(e) {
+      e.preventDefault();
+
+      const card = {
+        id: Date.now().toString(),
+        title: document.getElementById('cardTitle').value,
+        description: document.getElementById('cardDescription').value,
+        column: 'backlog',
+        assignee: document.getElementById('cardAssignee').value,
+        project: document.getElementById('cardProject').value,
+        priority: document.getElementById('cardPriority').value,
+        createdAt: new Date().toISOString()
+      };
+
+      data.cards.unshift(card);
+      saveData();
+      render();
+      closeModal();
+    }
+
+    async function saveData() {
+      if (!currentUser) return;
+
+      // Also save to localStorage as backup
+      localStorage.setItem('mission-control-data', JSON.stringify(data));
+
+      try {
+        const { error } = await supabase
+          .from('mc_boards')
+          .upsert({
+            user_id: currentUser.id,
+            data: data,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id'
+          });
+
+        if (error) {
+          console.error('Save error:', error);
+          showSaveToast('⚠️ Save failed');
+        } else {
+          console.log('💾 Saved to Supabase');
+          showSaveToast();
+        }
+      } catch (e) {
+        console.error('Save error:', e);
+        showSaveToast('⚠️ Saved locally only');
+      }
+    }
+
+    function showSaveToast(message = '✓ Saved') {
+      const toast = document.getElementById('saveToast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    // Card Detail Drawer
+    let selectedCardId = null;
+
+    function openDrawer(cardId) {
+      selectedCardId = cardId;
+      const card = data.cards.find(c => c.id === cardId);
+      if (!card) return;
+
+      document.getElementById('drawerTitle').textContent = card.title;
+      document.getElementById('detailStatus').value = card.column;
+      document.getElementById('detailAssignee').value = card.assignee;
+      document.getElementById('detailPriority').value = card.priority;
+      document.getElementById('detailProject').value = card.project;
+      document.getElementById('detailDescription').value = card.description || '';
+      document.getElementById('detailCreated').textContent = new Date(card.createdAt).toLocaleString();
+
+      if (card.completedAt) {
+        document.getElementById('completedRow').style.display = 'flex';
+        document.getElementById('detailCompleted').textContent = new Date(card.completedAt).toLocaleString();
+      } else {
+        document.getElementById('completedRow').style.display = 'none';
+      }
+
+      // Render comments
+      renderComments(card);
+
+      document.getElementById('drawer').classList.add('active');
+    }
+
+    function renderComments(card) {
+      const list = document.getElementById('commentsList');
+      const comments = card.comments || [];
+
+      if (comments.length === 0) {
+        list.innerHTML = '<div class="no-comments">No comments yet</div>';
+        return;
+      }
+
+      list.innerHTML = comments.map(c => `
+        <div class="comment">
+          <div class="comment-avatar assignee-${c.user}">${getInitials(c.user)}</div>
+          <div class="comment-body">
+            <div class="comment-header">
+              <span class="comment-author">${getDisplayName(c.user)}</span>
+              <span class="comment-time">${formatTime(c.timestamp)}</span>
+            </div>
+            <div class="comment-text">${formatCommentText(c.text)}</div>
+          </div>
+        </div>
+      `).join('');
+
+      // Scroll to bottom
+      list.scrollTop = list.scrollHeight;
+    }
+
+    function addComment() {
+      if (!selectedCardId) return;
+      const card = data.cards.find(c => c.id === selectedCardId);
+      if (!card) return;
+
+      const input = document.getElementById('commentInput');
+      const userSelect = document.getElementById('commentUser');
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      if (!card.comments) card.comments = [];
+
+      card.comments.push({
+        user: userSelect.value,
+        text: text,
+        timestamp: new Date().toISOString()
+      });
+
+      input.value = '';
+      hideMentionDropdown();
+      renderComments(card);
+      saveData();
+    }
+
+    // @Mention system
+    const teamMembers = [
+      { id: 'all', name: 'All for All', icon: '👥' },
+      { id: 'micah', name: 'Micah', icon: '👤' },
+      { id: 'friday', name: 'Friday', icon: '🤖' },
+      { id: 'max', name: 'Max (Marketing)', icon: '📢' },
+      { id: 'penny', name: 'Penny (Finance)', icon: '💰' },
+      { id: 'otto', name: 'Otto (Operations)', icon: '⚙️' },
+      { id: 'sage', name: 'Sage (Strategy)', icon: '🎯' },
+      { id: 'parker', name: 'Parker (Product)', icon: '🛠️' },
+      { id: 'lex', name: 'Lex (Legal)', icon: '⚖️' }
+    ];
+
+    let mentionStartPos = -1;
+    let selectedMentionIndex = 0;
+
+    function handleCommentInput(e) {
+      const input = e.target;
+      const value = input.value;
+      const cursorPos = input.selectionStart;
+
+      // Find @ symbol before cursor
+      const textBeforeCursor = value.substring(0, cursorPos);
+      const atIndex = textBeforeCursor.lastIndexOf('@');
+
+      if (atIndex !== -1 && (atIndex === 0 || textBeforeCursor[atIndex - 1] === ' ')) {
+        const query = textBeforeCursor.substring(atIndex + 1).toLowerCase();
+        mentionStartPos = atIndex;
+
+        // Filter team members
+        const filtered = teamMembers.filter(m =>
+          m.id.toLowerCase().includes(query) ||
+          m.name.toLowerCase().includes(query)
+        );
+
+        if (filtered.length > 0) {
+          showMentionDropdown(filtered);
+        } else {
+          hideMentionDropdown();
+        }
+      } else {
+        hideMentionDropdown();
+      }
+    }
+
+    function handleCommentKeydown(e) {
+      const dropdown = document.getElementById('mentionDropdown');
+
+      if (!dropdown.classList.contains('show')) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addComment();
+        }
+        return;
+      }
+
+      const items = dropdown.querySelectorAll('.mention-item');
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedMentionIndex = Math.min(selectedMentionIndex + 1, items.length - 1);
+        updateMentionSelection(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedMentionIndex = Math.max(selectedMentionIndex - 1, 0);
+        updateMentionSelection(items);
+      } else if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        if (items[selectedMentionIndex]) {
+          insertMention(items[selectedMentionIndex].dataset.id);
+        }
+      } else if (e.key === 'Escape') {
+        hideMentionDropdown();
+      }
+    }
+
+    function showMentionDropdown(members) {
+      const dropdown = document.getElementById('mentionDropdown');
+      selectedMentionIndex = 0;
+
+      dropdown.innerHTML = members.map((m, i) => `
+        <div class="mention-item ${i === 0 ? 'selected' : ''}" data-id="${m.id}" onclick="insertMention('${m.id}')">
+          <div class="mention-item-avatar assignee-${m.id}">${m.icon}</div>
+          <span>${m.name}</span>
+        </div>
+      `).join('');
+
+      dropdown.classList.add('show');
+    }
+
+    function hideMentionDropdown() {
+      document.getElementById('mentionDropdown').classList.remove('show');
+      mentionStartPos = -1;
+    }
+
+    function updateMentionSelection(items) {
+      items.forEach((item, i) => {
+        item.classList.toggle('selected', i === selectedMentionIndex);
+      });
+    }
+
+    function insertMention(memberId) {
+      const input = document.getElementById('commentInput');
+      const value = input.value;
+      const member = teamMembers.find(m => m.id === memberId);
+
+      if (mentionStartPos === -1 || !member) return;
+
+      const before = value.substring(0, mentionStartPos);
+      const after = value.substring(input.selectionStart);
+
+      input.value = before + '@' + member.id + ' ' + after;
+      input.focus();
+
+      const newPos = mentionStartPos + member.id.length + 2;
+      input.setSelectionRange(newPos, newPos);
+
+      hideMentionDropdown();
+    }
+
+    // Render mentions in comment text
+    function formatCommentText(text) {
+      return escapeHtml(text).replace(/@(\w+)/g, (match, name) => {
+        const member = teamMembers.find(m => m.id === name.toLowerCase());
+        if (member) {
+          return `<span class="mention">@${member.id}</span>`;
+        }
+        return match;
+      });
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawer').classList.remove('active');
+      selectedCardId = null;
+    }
+
+    function updateCardField(field, value) {
+      if (!selectedCardId) return;
+      const card = data.cards.find(c => c.id === selectedCardId);
+      if (!card) return;
+
+      const oldColumn = card.column;
+      card[field] = value;
+
+      if (field === 'column' && value === 'done' && oldColumn !== 'done') {
+        card.completedAt = new Date().toISOString();
+        document.getElementById('completedRow').style.display = 'flex';
+        document.getElementById('detailCompleted').textContent = new Date(card.completedAt).toLocaleString();
+
+        data.activity.unshift({
+          id: 'a' + Date.now(),
+          type: 'completed',
+          cardId: card.id,
+          cardTitle: card.title,
+          user: card.assignee,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      saveData();
+      render();
+    }
+
+    function deleteCard() {
+      if (!selectedCardId) return;
+      if (!confirm('Delete this card?')) return;
+
+      data.cards = data.cards.filter(c => c.id !== selectedCardId);
+      saveData();
+      render();
+      closeDrawer();
+    }
+
+    document.getElementById('drawer').addEventListener('click', (e) => {
+      if (e.target.id === 'drawer') closeDrawer();
+    });
+
+    function exportData() {
+      saveData();
+      const btn = document.querySelector('.btn-ghost[onclick="exportData()"]');
+      if (btn) {
+        btn.textContent = '✅ Saved!';
+        setTimeout(() => btn.textContent = '💾 Sync', 1500);
+      }
+    }
+
+    window.getMissionControlData = () => JSON.stringify(data, null, 2);
+
+    // Request a briefing from Friday
+    function requestBriefing() {
+      const btn = document.querySelector('.briefing-banner .btn-primary');
+      btn.textContent = 'Requesting...';
+      btn.disabled = true;
+
+      // Write a request file that Friday can detect
+      fetch('/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          briefingRequested: new Date().toISOString()
+        })
+      }).then(() => {
+        btn.textContent = '✓ Requested';
+        setTimeout(() => {
+          btn.textContent = 'Generate Now';
+          btn.disabled = false;
+        }, 3000);
+
+        // Show pending state
+        document.getElementById('briefingContent').innerHTML = `
+          <div class="briefing-placeholder">⏳ Briefing requested - Friday is compiling your update...</div>
+        `;
+      }).catch(() => {
+        btn.textContent = 'Generate Now';
+        btn.disabled = false;
+      });
+    }
+
+    // Render briefing section
+    function renderBriefing() {
+      if (!execData || !execData.morningBriefing) return;
+
+      const briefing = execData.morningBriefing;
+      const lastRun = briefing.lastRun ? new Date(briefing.lastRun) : null;
+      const schedule = briefing.schedule || '8:00 AM MST';
+
+      document.getElementById('briefingSchedule').textContent = `Next: ${schedule}`;
+
+      // If we have a recent briefing (today), show it
+      if (lastRun && isToday(lastRun)) {
+        const content = execData.lastBriefingContent || generateBriefingSummary();
+        document.getElementById('briefingContent').innerHTML = content;
+      }
+    }
+
+    function isToday(date) {
+      const today = new Date();
+      return date.getDate() === today.getDate() &&
+             date.getMonth() === today.getMonth() &&
+             date.getFullYear() === today.getFullYear();
+    }
+
+    function generateBriefingSummary() {
+      if (!data || !execData) return '';
+
+      const active = data.cards.filter(c => c.column !== 'done').length;
+      const inProgress = data.cards.filter(c => c.column === 'in-progress').length;
+      const review = data.cards.filter(c => c.column === 'review').length;
+      const done = data.cards.filter(c => c.column === 'done').length;
+
+      const activeDepts = Object.values(execData.departments || {}).filter(d => d.status === 'active').length;
+      const totalDepts = Object.keys(execData.departments || {}).length;
+
+      const allAlerts = [];
+      for (const dept of Object.values(execData.departments || {})) {
+        (dept.alerts || []).forEach(a => allAlerts.push(a));
+      }
+
+      return `
+        <div class="briefing-summary">
+          <div class="briefing-stat">
+            <div class="briefing-stat-label">Active Cards</div>
+            <div class="briefing-stat-value">${active}</div>
+          </div>
+          <div class="briefing-stat">
+            <div class="briefing-stat-label">In Progress</div>
+            <div class="briefing-stat-value">${inProgress}</div>
+          </div>
+          <div class="briefing-stat">
+            <div class="briefing-stat-label">Needs Review</div>
+            <div class="briefing-stat-value">${review}</div>
+          </div>
+          <div class="briefing-stat">
+            <div class="briefing-stat-label">Depts Active</div>
+            <div class="briefing-stat-value">${activeDepts}/${totalDepts}</div>
+          </div>
+        </div>
+        ${allAlerts.length > 0 ? `
+          <div class="briefing-insights">
+            <h4>⚠️ Alerts</h4>
+            <ul>${allAlerts.map(a => `<li>${a}</li>`).join('')}</ul>
+          </div>
+        ` : ''}
+      `;
+    }
+
+    // Initialize - check auth status
+    checkAuth();
+  </script>
+</body>
+</html>
